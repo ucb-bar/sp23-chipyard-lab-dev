@@ -1,43 +1,42 @@
 #include "mmio.h"
 
-#define GCD_STATUS 0x2000
-#define GCD_X 0x2004
-#define GCD_Y 0x2008
-#define GCD_GCD 0x200C
+/* Define the MMIO register addresses */
+#define VECADD_STATUS 0x2000
+#define VECADD_X 0x2004
+#define VECADD_Y 0x2008
+#define VECADD_RES 0x200C
 
-unsigned int gcd_ref(unsigned int x, unsigned int y) {
-  while (y != 0) {
-    if (x > y)
-      x = x - y;
-    else
-      y = y - x;
-  }
-  return x;
+unsigned int VECADD_ref(unsigned int x, unsigned int y) {
+ /* TODO: fill our the C reference solution*/
 }
 
-// DOC include start: GCD test
+// DOC include start: VECADD test
 int main(void)
 {
   uint32_t result, ref, x = 20, y = 15;
 
-  // wait for peripheral to be ready
-  while ((reg_read8(GCD_STATUS) & 0x2) == 0) ;
+  /* wait for peripheral to be ready i.e. wait until we can write to the MMIOs*/
+  while ((reg_read8(VECADD_STATUS) & 0x2) == 0) ;
 
-  reg_write32(GCD_X, x);
-  reg_write32(GCD_Y, y);
+  /* write our input values to MMIOs*/
+  reg_write32(VECADD_X, x);
+  reg_write32(VECADD_Y, y);
 
 
-  // wait for peripheral to complete
-  while ((reg_read8(GCD_STATUS) & 0x1) == 0) ;
+  /* wait for peripheral to complete i.e. wait until we have the result*/
+  while ((reg_read8(VECADD_STATUS) & 0x1) == 0) ;
 
-  result = reg_read32(GCD_GCD);
-  ref = gcd_ref(x, y);
+  /* read the result */
+  result = reg_read32(VECADD_RES);
+
+  /* compare the result with the refence C solution */
+  ref = VECADD_ref(x, y);
 
   if (result != ref) {
     printf("Hardware result %d does not match reference value %d\n", result, ref);
     return 1;
   }
-  printf("Hardware result %d is correct for GCD\n", result);
+  printf("Hardware result %d is correct for VECADD\n", result);
   return 0;
 }
-// DOC include end: GCD test
+// DOC include end: VECADD test

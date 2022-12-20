@@ -56,7 +56,6 @@ class VecAddMMIOChiselModule(val w: Int) extends Module
       des(i) := 0.U
     }
   
-
   io.input_ready := state === s_idle
   io.output_valid := state === s_done
   io.vec_add := vec_add
@@ -69,15 +68,7 @@ class VecAddMMIOChiselModule(val w: Int) extends Module
     state := s_idle
   }
 
-  when (state === s_idle && io.input_valid) {
-    temp_x := io.x
-    temp_y := io.y
-  } .elsewhen (state === s_run) {
-    for (i <- 0 until 4) {
-        val byte = temp_x((i + 1)*4 - 1, 4 * i) + temp_y((i + 1)*4 - 1, 4 * i)
-        des(i) := Mux(byte > 255.U, 255.U, byte)
-    }
-  }
+  /* TODO: Add FSM logic here */
 
   io.busy := state =/= s_idle
 }
@@ -86,20 +77,22 @@ class VecAddMMIOChiselModule(val w: Int) extends Module
 trait VecAddModule extends HasRegMap {
   val io: VecAddTopIO
 
+  
   implicit val p: Parameters
   def params: VecAddParams
   val clock: Clock
   val reset: Reset
 
-
-  // How many clock cycles in a PWM cycle?
+  /* setup */
   val x = Reg(UInt(params.width.W))
   val y = Wire(new DecoupledIO(UInt(params.width.W)))
   val vec_add = Wire(new DecoupledIO(UInt(params.width.W)))
   val status = Wire(UInt(2.W))
 
+  /* instantiates our accelerator */
   val impl =  Module(new VecAddMMIOChiselModule(params.width))
 
+  /* hook up input/outputs to the accelerator*/
   impl.io.clock := clock
   impl.io.reset := reset.asBool
 
@@ -115,6 +108,7 @@ trait VecAddModule extends HasRegMap {
   status := Cat(impl.io.input_ready, impl.io.output_valid)
   io.vec_add_busy := impl.io.busy
 
+  /* Estblishes regmaps */
   regmap(
     0x00 -> Seq(
       RegField.r(2, status)), // a read-only register capturing current status
@@ -127,57 +121,14 @@ trait VecAddModule extends HasRegMap {
 }
 
 
-/* Connecting by TileLink */
-class VecAddTL(params: VecAddParams, beatBytes: Int)(implicit p: Parameters)
-  extends TLRegisterRouter(
-    params.address, "vecadd", Seq("ucbbar,vecadd"),
-    beatBytes = beatBytes)(
-      new TLRegBundle(params, _) with VecAddTopIO)(
-      new TLRegModule(params, _, _) with VecAddModule)
+/* TODO: Connecting by TileLink */
 
-class VecAddAXI4(params: VecAddParams, beatBytes: Int)(implicit p: Parameters)
-  extends AXI4RegisterRouter(
-    params.address,
-    beatBytes=beatBytes)(
-      new AXI4RegBundle(params, _) with VecAddTopIO)(
-      new AXI4RegModule(params, _, _) with VecAddModule)
+/* TODO: Connect to SoC */
 
-/* Top-level traits */
-trait CanHavePeripheryVecAdd { this: BaseSubsystem =>
-  private val portName = "vecadd"
 
-  val vecadd = p(VecAddKey) match {
-    case Some(params) => {
-      if (params.useAXI4) {
-        val vecadd = LazyModule(new VecAddAXI4(params, pbus.beatBytes)(p))
-        pbus.toSlave(Some(portName)) {
-          vecadd.node :=
-          AXI4Buffer () :=
-          TLToAXI4 () :=
-          TLFragmenter(pbus.beatBytes, pbus.blockBytes, holdFirstDeny = true)
-        }
-        Some(vecadd)
-      } else {
-        val vecadd = LazyModule(new VecAddTL(params, pbus.beatBytes)(p))
-        pbus.toVariableWidthSlave(Some(portName)) { vecadd.node }
-        Some(vecadd)
-      }
-    }
-    case None => None
-  }
-}
 
-trait CanHavePeripheryVecAddModuleImp extends LazyModuleImp {
-  val outer: CanHavePeripheryVecAdd
-  val vecadd_busy = outer.vecadd match {
-    case Some(vecadd) => {
-      val busy = IO(Output(Bool()))
-      busy := vecadd.module.io.vec_add_busy
-      Some(busy)
-    }
-    case None => None
-  }
-}
+
+
 
 /* config fragment definition */
 class WithVecAdd(useAXI4: Boolean = false, useBlackBox: Boolean = false) extends Config((site, here, up) => {
