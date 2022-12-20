@@ -7,6 +7,11 @@ import freechips.rocketchip.diplomacy.{AsynchronousCrossing}
 // Rocket Configs
 // --------------
 
+class VecAddTLRocketConfig extends Config(
+  new chipyard.example.WithVecAdd(useAXI4=false, useBlackBox=false) ++          // Use GCD Chisel, connect Tilelink
+  new freechips.rocketchip.subsystem.WithNBigCores(1) ++
+  new chipyard.config.AbstractConfig)
+
 class RocketConfig extends Config(
   new freechips.rocketchip.subsystem.WithNBigCores(1) ++         // single rocket-core
   new chipyard.config.AbstractConfig)
