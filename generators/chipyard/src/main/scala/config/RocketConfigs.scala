@@ -7,7 +7,16 @@ import freechips.rocketchip.diplomacy.{AsynchronousCrossing}
 // Rocket Configs
 // --------------
 
+class CustomAccRoCCConfig extends Config(
+	/* YOUR CODE HERE */
+)
+
 /* TODO: Add a RocketConfig with the MMIO accelerator */
+
+/* CustomAccRoCCCOnfig SOLUTION */
+#class CustomAccRoCCConfig extends Config(
+#  new customAccRoCC.WithCustomAccRoCC ++
+#  new RocketConfig)
 
 class RocketConfig extends Config(
   new freechips.rocketchip.subsystem.WithNBigCores(1) ++         // single rocket-core
