@@ -14,9 +14,11 @@ class CustomAccRoCCConfig extends Config(
 /* TODO: Add a RocketConfig with the MMIO accelerator */
 
 /* CustomAccRoCCCOnfig SOLUTION */
-#class CustomAccRoCCConfig extends Config(
-#  new customAccRoCC.WithCustomAccRoCC ++
-#  new RocketConfig)
+/*
+class CustomAccRoCCConfig extends Config(
+  new customAccRoCC.WithCustomAccRoCC ++
+  new RocketConfig)
+*/
 
 class RocketConfig extends Config(
   new freechips.rocketchip.subsystem.WithNBigCores(1) ++         // single rocket-core
