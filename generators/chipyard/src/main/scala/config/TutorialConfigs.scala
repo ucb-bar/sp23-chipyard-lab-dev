@@ -36,7 +36,7 @@ class TutorialStarterConfig extends Config(
 
   // CUSTOMIZE the L2
   // Uncomment this line, and specify a size if you want to have a L2
-  // new freechips.rocketchip.subsystem.WithInclusiveCache(nBanks=1, nWays=4, capacityKB=128) ++
+  // new freechips.rocketchip.subsystem.WithInclusiveCache(nWays=4, capacityKB=128) ++
 
   new chipyard.config.AbstractConfig
 )
