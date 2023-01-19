@@ -11,13 +11,6 @@ import freechips.rocketchip.diplomacy.{AsynchronousCrossing}
 
 /* TODO: Add a RocketConfig with the RoCC accelerator */
 
-/* CustomAccRoCCCOnfig SOLUTION */
-/*
-class CustomAccRoCCConfig extends Config(
-  new customAccRoCC.WithCustomAccRoCC ++
-  new RocketConfig)
-*/
-
 class RocketConfig extends Config(
   new freechips.rocketchip.subsystem.WithNBigCores(1) ++         // single rocket-core
   new chipyard.config.AbstractConfig)
