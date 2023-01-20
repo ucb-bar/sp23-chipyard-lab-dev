@@ -56,6 +56,6 @@ int main(void) {
 
   printf("Functional Model Output = %#018" PRIx64 " | Accelerator Output = %#018" PRIx64 "\n", output_vec_model, output_vec_acc);
 
-  return ~(output_vec_model == output_vec_acc);
+  return !(output_vec_model == output_vec_acc);
 
 }
